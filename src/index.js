@@ -1,46 +1,37 @@
 import './sass/main.scss';
-import gallery from './menu.json';
-import galleryTpl from './tamplates/gallery.hbs';
+import countryTpl from './tamplates/country.hbs';
+import countryList from './tamplates/countrylist.hbs';
+import API from './fetchCountries';
+import debounce from 'lodash.debounce';
+import { error, defaultModules } from '../node_modules/@pnotify/core/dist/PNotify.js';
+import * as PNotifyMobile from '../node_modules/@pnotify/mobile/dist/PNotifyMobile.js';
 
-const Theme = {
-  LIGHT: 'light-theme',
-  DARK: 'dark-theme',
-};
+defaultModules.set(PNotifyMobile, {});
 
-const galleryCheckbox = document.querySelector('#theme-switch-toggle');
-const bodyEl = document.querySelector('body');
-const savedDataLight = localStorage.getItem('Theme');
-const galleryContainer = document.querySelector('.js-menu');
+const countryContainer = document.querySelector('.js-country');
+const inputCountry = document.querySelector('.js-input');
 
-makeCheckboxTrue(savedDataLight);
+inputCountry.addEventListener('input', debounce(onSearch, 500));
 
-function makeCheckboxTrue(savedDataLight) {
-  const dark = 'dark-theme';
+function onSearch(e) {
+  const searchQuery = e.target.value;
 
-  if (savedDataLight == dark) {
-    galleryCheckbox.checked = true;
-    bodyEl.classList.add('dark-theme');
-  }
+  API.fetchCountries(searchQuery)
+
+    .then(renderCountry)
+    .catch(error => console.log(error));
 }
 
-const glrMarkup = glrMarkupEl(gallery);
-
-bodyEl.classList.add('light-theme');
-
-galleryContainer.insertAdjacentHTML('beforeend', glrMarkup);
-
-galleryCheckbox.addEventListener('change', onCheckboxChange);
-
-function onCheckboxChange(evt) {
-  if (evt.currentTarget.checked) {
-    bodyEl.classList.replace('light-theme', 'dark-theme');
-    localStorage.setItem('Theme', 'dark-theme');
-  } else {
-    bodyEl.classList.replace('dark-theme', 'light-theme');
-    localStorage.setItem('Theme', 'light-theme');
+function renderCountry(country) {
+  if (country.length === 1) {
+    const markup = countryTpl(country);
+    countryContainer.innerHTML = markup;
+  } else if (country.length >= 2 && country.length <= 10) {
+    const markup = countryList(country);
+    countryContainer.innerHTML = markup;
+  } else if (country.length > 10) {
+    error({
+      text: 'Слишком много совпадений. Детализируйте пожалуйста запрос',
+    });
   }
-}
-
-function glrMarkupEl(gallery) {
-  return gallery.map(el => galleryTpl(el)).join('');
 }
