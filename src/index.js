@@ -15,11 +15,11 @@ inputCountry.addEventListener('input', debounce(onSearch, 500));
 
 function onSearch(e) {
   const searchQuery = e.target.value;
-
-  API.fetchCountries(searchQuery)
-
-    .then(renderCountry)
-    .catch(error => console.log(error));
+  if (searchQuery !== '') {
+    API.fetchCountries(searchQuery)
+      .then(renderCountry)
+      .catch(error => console.log('error'));
+  }
 }
 
 function renderCountry(country) {
