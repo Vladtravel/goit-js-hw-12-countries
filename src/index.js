@@ -14,7 +14,9 @@ const inputCountry = document.querySelector('.js-input');
 inputCountry.addEventListener('input', debounce(onSearch, 500));
 
 function onSearch(e) {
-  const searchQuery = e.target.value;
+  let searchQuery = e.target.value;
+  searchQuery = searchQuery.trim();
+
   if (searchQuery !== '') {
     API.fetchCountries(searchQuery)
       .then(renderCountry)
